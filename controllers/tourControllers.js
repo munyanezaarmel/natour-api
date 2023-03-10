@@ -1,30 +1,5 @@
 const TourModel = require('../models/tourModel');
-
-// const tours = JSON.parse(
-//   fs.readFileSync(`${__dirname}../../dev-data/data/tours-simple.json`)
-// );
-// exports.checkId = (req, res, next, val) => {
-//   console.log(`the id value is ${val}`);
-//   //   const id = req.params.id * 1;
-//   if (tours.length < val) {
-//     res.status(404).json({
-//       status: 'fail',
-//       message: 'id not found',
-//     });
-//   }
-
-//   next();
-// };
-// exports.checkBody = (req, res, next) => {
-//   console.log(req.body);
-//   if (!req.body.name || !req.body.price) {
-//     return res.status(404).json({
-//       status: 'not found',
-//       message: 'please provide name and price',
-//     });
-//   }
-//   next();
-// };
+const APIFeatures = require('../utils/apiFeaturesTour');
 // tour route handlers
 exports.getTour = async (req, res) => {
   try {
@@ -48,51 +23,7 @@ exports.cheapTour = (req, res, next) => {
   req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
   next();
 };
-class APIFeatures {
-  constructor(query, queryString) {
-    this.query = query;
-    this.queryString = queryString;
-  }
 
-  filter() {
-    const objQuery = { ...this.queryString };
-    const excludedQuery = ['page', 'sort', 'limit', 'fields'];
-    excludedQuery.forEach((el) => delete objQuery[el]);
-    let queryStr = JSON.stringify(objQuery);
-    //2 .advanced filtering
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-    this.query.find(JSON.parse(queryStr));
-    return this;
-  }
-
-  sort() {
-    if (this.queryString.sort) {
-      const sorted = this.queryString.sort.split(',').join(' ');
-      this.query = this.query.sort(sorted);
-    } else {
-      this.query = this.query.sort('-createdAt');
-    }
-    return this;
-  }
-
-  limit() {
-    if (this.queryString.fields) {
-      const fields = this.queryString.fields.split(',').join(' ');
-      this.query = this.query.select(fields);
-    } else {
-      this.query = this.query.select('-__v');
-    }
-    return this;
-  }
-
-  paginate() {
-    const page = this.queryString.page * 1 || 1;
-    const limit = this.queryString.limit * 1 || 100;
-    const skip = (page - 1) * limit;
-    this.query = this.query.skip(skip).limit(limit);
-    return this;
-  }
-}
 exports.getAllTour = async (req, res) => {
   try {
     const features = new APIFeatures(TourModel.find(), req.query)
